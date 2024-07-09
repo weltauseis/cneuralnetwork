@@ -1,10 +1,10 @@
 #include "dataset.h"
 #include <stdio.h>
 
-static Image training_images[60000];
-
-b32 load_training_dataset()
+ImageDataset *load_training_dataset()
 {
+    ImageDataset *dataset = malloc(sizeof(ImageDataset));
+
     // IMAGE DATA
 
     FILE *training_images_files = fopen("data/train-images.idx3-ubyte", "rb");
@@ -40,12 +40,18 @@ b32 load_training_dataset()
         printf("Number of images : %d\n", number_of_images);
         printf("Rows : %d\n", rows);
         printf("Columns : %d\n", columns);
+
+        dataset->nb = number_of_images;
+        dataset->rows = rows;
+        dataset->cols = columns;
+        dataset->data = malloc(rows * columns * number_of_images * sizeof(u8));
     }
 
     // read the pixels
-    for (u32 i = 0; i < 60000; i++)
+    u32 image_size = dataset->cols * dataset->rows * sizeof(u8);
+    for (u32 i = 0; i < dataset->nb; i++)
     {
-        fread(training_images[i].pixels, 28 * 28, 1, training_images_files);
+        fread(&dataset->data[i * image_size], image_size, 1, training_images_files);
     }
     fclose(training_images_files);
 
@@ -75,27 +81,29 @@ b32 load_training_dataset()
         printf("-- TRAINING LABEL DATA LOADED --\n");
         printf("Magic number : %d\n", magic_number);
         printf("Number of items : %d\n", number_of_items);
+
+        dataset->labels = malloc(number_of_items * sizeof(u8));
     }
 
     // read the labels
-    for (u32 i = 0; i < 60000; i++)
+    for (u32 i = 0; i < dataset->nb; i++)
     {
-        fread(&training_images[i].label, 1, 1, training_labels_file);
+        fread(&dataset->labels[i], sizeof(u8), 1, training_labels_file);
     }
 
     // visualize the first few images
-    /* for (u32 i = 0; i < 5; i++)
+    for (u32 i = 0; i < 5; i++)
     {
         for (u32 y = 0; y < 28; y++)
         {
             for (u32 x = 0; x < 28; x++)
             {
-                printf("%c", training_images[i].pixels[y * 28 + x] > 127 ? '#' : '.');
+                printf("%c", dataset->data[i * image_size + y * 28 + x] > 127 ? '#' : '.');
             }
             printf("\n");
         }
-        printf("Label : %d\n", training_images[i].label);
-    } */
+        printf("Label : %d\n", dataset->labels[i]);
+    }
 
-    return true;
+    return dataset;
 }

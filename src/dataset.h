@@ -1,9 +1,12 @@
 #include "types.h"
-struct Image
+struct ImageDataset
 {
-    u8 pixels[28 * 28];
-    u8 label;
+    u8 *data;
+    u8 *labels;
+    u32 nb;
+    u32 cols;
+    u32 rows;
 };
-typedef struct Image Image;
+typedef struct ImageDataset ImageDataset;
 
-b32 load_training_dataset();
+ImageDataset *load_training_dataset();
